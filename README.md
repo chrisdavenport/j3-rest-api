@@ -140,50 +140,86 @@ transformName “:” definition
 
 where
 
-transformName
-	is the name of a transform that will modify the value before passing it to the API object.  This is often just a matter of type casting (eg. “string” or “int” transforms) but more sophisticated transforms are available (eg. “state”) and you can add your own or override the standard ones.  Look for methods with the “transform” prefix (eg. “string” calls the “transformString” method in the controller).
-	definition
-	is a string which is first parsed for model field names that will be substituted by their values before the resulting string is passed to the transform method.
-	
+<table>
+	<tr>
+		<td>transformName</td>
+		<td>is the name of a transform that will modify the value before passing it to the API object.  This is often just a matter of type casting (eg. “string” or “int” transforms) but more sophisticated transforms are available (eg. “state”) and you can add your own or override the standard ones.  Look for methods with the “transform” prefix (eg. “string” calls the “transformString” method in the controller).</td>
+	</tr>
+	<tr>
+		<td>definition</td>
+		<td>is a string which is first parsed for model field names that will be substituted by their values before the resulting string is passed to the transform method.</td>
+	</tr>
+
 The definition string may contain the names of model fields enclosed in curly brackets.  These will be automatically replaced by the model values.  The field name may contain a “.” in which case the part before the dot refers to a JSON-encoded model field and the part after the dot refers to a field within that JSON-encoded data.  The unpacking of JSON-encoded fields is handled automatically.
 
 Some examples:
 
-string:{title}
-	Retrieves the title field from the model and casts it to a string.
-	string:post
-	Returns the literal string “post” (without the quotes).
-	string:/joomla:articles/{id}
-	Retrieves the id field from the model and substitutes it into the definition string.  For example, if id has the value 987 then this will return the string “/joomla:articles/987”.
-	
+<table>
+	<tr>
+		<td>string:{title}</td>
+		<td>Retrieves the title field from the model and casts it to a string.</td>
+	</tr>
+	<tr>
+		<td>string:post</td>
+		<td>Returns the literal string “post” (without the quotes).</td>
+	</tr>
+	<tr>
+		<td>string:/joomla:articles/{id}</td>
+		<td>Retrieves the id field from the model and substitutes it into the definition string.  For example, if id has the value 987 then this will return the string “/joomla:articles/987”.</td>
+	</tr>
+</table>
+
 The following transforms are available by default:
 
-int
-	Casts the definition string to an integer.
-	string
-	Casts the definition string to a string (duh!).
-	boolean
-	Casts the definition string to a boolean.
-	datetime
-	Returns an ISO 8601 date/time field [NOT IMPLEMENTED YET]
-	state
-	Returns “unpublished”, “published”, “trashed” or “archived”.
-	ynglobal
-	Returns “yes”, “no” or “global”.
-	
+<table>
+	<tr>
+		<td>int</td>
+		<td>Casts the definition string to an integer.</td>
+	</tr>
+	<tr>
+		<td>string</td>
+		<td>Casts the definition string to a string (duh!).</td>
+	</tr>
+	<tr>
+		<td>boolean</td>
+		<td>Casts the definition string to a boolean.</td>
+	</tr>
+	<tr>
+		<td>datetime</td>
+		<td>Returns an ISO 8601 date/time field [NOT IMPLEMENTED YET]</td>
+	</tr>
+	<tr>
+		<td>state</td>
+		<td>Returns “unpublished”, “published”, “trashed” or “archived”.</td>
+	</tr>
+	<tr>
+		<td>ynglobal</td>
+		<td>Returns “yes”, “no” or “global”.</td>
+	</tr>
+</table>
+
 The following transforms are added for the com_content services:-
 
-float
-	Returns “left”, “right”, “none” or “global”.
-	position
-	Returns “above”, “below”, “split” or “global”.
-	target
-	Returns “parent”, “new”, “popup”, “modal” or “global”.
-
+<table>
+	<tr>
+		<td>float</td>
+		<td>Returns “left”, “right”, “none” or “global”.</td>
+	</tr>
+	<tr>
+		<td>position</td>
+		<td>Returns “above”, “below”, “split” or “global”.</td>
+	</tr>
+	<tr>
+		<td>target</td>
+		<td>Returns “parent”, “new”, “popup”, “modal” or “global”.</td>
+	</tr>
+</table>
 
 Because the list representation would not normally include a full representations of each of the embedded objects, there is a simple JSON file that defines which fields are included.  The file for com_content is
 
+```
 /components/com_content/services/articles/list/embedded.json
+```
 
 and it contains something like this:
 
