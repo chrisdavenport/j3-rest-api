@@ -1,0 +1,4 @@
+{
+	"tasks":"tasksList",
+	"tasks/:task_id":"tasks"
+}

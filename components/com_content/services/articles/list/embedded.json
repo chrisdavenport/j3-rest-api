@@ -1,0 +1,26 @@
+{
+	"embedded":
+	[
+		"/access",
+		"/featured",
+		"/introText",
+		"/language",
+		"_links/self.href",
+		"_links/joomla:assets.href",
+		"_links/joomla:categories.href",
+		"_links/joomla:checkout.href",
+		"_links/joomla:checkout.method",
+		"_links/joomla:introImage.href",
+		"_links/joomla:introImage.float",
+		"_links/joomla:introImage.title",
+		"_links/joomla:introImage.caption",
+		"metadata/authorName",
+		"/ordering",
+		"publish/alias",
+		"publish/created",
+		"publish/publishDown",
+		"publish/publishUp",
+		"/state",
+		"/title"
+	]
+}
