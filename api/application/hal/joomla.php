@@ -345,6 +345,36 @@ class ApiApplicationHalJoomla extends ApiApplicationHal
 	}
 
 	/**
+	 * Method to transform a value to a float string.
+	 *
+	 * @param  string   $definition  Field definition.
+	 * @param  mixed    $data        Source data.
+	 *
+	 * @return string Transformed value.
+	 */
+	protected function transformFloat($definition, $data)
+	{
+		switch ($definition)
+		{
+			case '':
+				$return = 'global';
+				break;
+
+			case 'left':
+			case 'right':
+			case 'none':
+				$return = $definition;
+				break;
+
+			default:
+				$return = 'undefined';
+				break;
+		}
+
+		return $return;
+	}
+
+	/**
 	 * Method to transform a value to an integer.
 	 *
 	 * @param  string   $definition  Field definition.
@@ -394,6 +424,41 @@ class ApiApplicationHalJoomla extends ApiApplicationHal
 	protected function transformString($definition, $data)
 	{
 		return (string) $definition;
+	}
+
+	/**
+	 * Method to transform a value to standard target string.
+	 *
+	 * @param  string   $definition  Field definition.
+	 * @param  mixed    $data        Source data.
+	 *
+	 * @return string Transformed value.
+	 */
+	protected function transformTarget($definition, $data)
+	{
+		switch ($definition)
+		{
+			case '':
+				$return = 'global';
+				break;
+			case 0:
+				$return = 'parent';
+				break;
+			case 1:
+				$return = 'new';
+				break;
+			case 2:
+				$return = 'popup';
+				break;
+			case 3:
+				$return = 'modal';
+				break;
+			default:
+				$return = 'undefined';
+				break;
+		}
+
+		return $return;
 	}
 
 	/**

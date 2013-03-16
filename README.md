@@ -107,10 +107,10 @@ The fields returned for the articles resource are described in https://docs.goog
 
 In order to establish the mapping between the database fields and the fields exposed in the API, a JSON object describes the relationship so that in many (most?) cases, adding web services support to an existing component is mostly a matter of creating these map files.
 
-The map is located in a {resource}.json file.  So for com_content, for example, you should look in the file
+The map is located in a resource.json file.  So for com_content, for example, you should look in the file
 
 ```
-/components/com_content/services/articles/articles.json
+/components/com_content/services/articles/resource.json
 ```
 
 The JSON object contained in this file is a simple list of key-value pairs.  All the fields represented by the key-value pairs will be included in a full representation of the resource.  Both keys and values are strings which have a specific format that describes the detailed mapping between the field in the API representation (the key) and the field in the model (database) representation (the value).
@@ -155,10 +155,12 @@ where
 	</tr>
 	<tr>
 		<td>definition</td>
-		<td>is a string which is first parsed for model field names that will be substituted by their values before the resulting string is passed to the transform method.</td>
+		<td>is a string which is first parsed for model field names that will be substituted by their values before the resulting
+		string is passed to the transform method.  The definition string may contain the names of model fields enclosed in curly brackets.
+		These will be automatically replaced by the model values.  The field name may contain a “.” in which case the part before
+		the dot refers to a JSON-encoded model field and the part after the dot refers to a field within that JSON-encoded data.
+		The unpacking of JSON-encoded fields is handled automatically.</td>
 	</tr>
-
-The definition string may contain the names of model fields enclosed in curly brackets.  These will be automatically replaced by the model values.  The field name may contain a “.” in which case the part before the dot refers to a JSON-encoded model field and the part after the dot refers to a field within that JSON-encoded data.  The unpacking of JSON-encoded fields is handled automatically.
 
 Some examples:
 
@@ -197,8 +199,16 @@ The following transforms are available by default:
 		<td>Returns an ISO 8601 date/time field [NOT IMPLEMENTED YET]</td>
 	</tr>
 	<tr>
+		<td>float</td>
+		<td>Returns “left”, “right”, “none” or “global”.</td>
+	</tr>
+	<tr>
 		<td>state</td>
 		<td>Returns “unpublished”, “published”, “trashed” or “archived”.</td>
+	</tr>
+	<tr>
+		<td>target</td>
+		<td>Returns “parent”, “new”, “popup”, “modal” or “global”.</td>
 	</tr>
 	<tr>
 		<td>ynglobal</td>
@@ -206,20 +216,12 @@ The following transforms are available by default:
 	</tr>
 </table>
 
-The following transforms are added for the com_content services:-
+The following transform is added for the com_content services:-
 
 <table>
 	<tr>
-		<td>float</td>
-		<td>Returns “left”, “right”, “none” or “global”.</td>
-	</tr>
-	<tr>
 		<td>position</td>
 		<td>Returns “above”, “below”, “split” or “global”.</td>
-	</tr>
-	<tr>
-		<td>target</td>
-		<td>Returns “parent”, “new”, “popup”, “modal” or “global”.</td>
 	</tr>
 </table>
 
@@ -262,3 +264,12 @@ and it contains something like this:
 
 The array is a simple list of field names to be included in the embedded representations.  Each entry must match a field name in the articles.json file.  The fields definitions from the articles.json file used so that data in both single and list representations should match exactly.
 
+## References and further reading
+
+* https://docs.google.com/document/d/1FVKGlV6BN6pu-YH2WR2pQHE3Ez7M6r7LD417GSw9ZSo/edit?usp=sharing Joomla CMS Web Services API Specification
+* https://docs.google.com/document/d/11SqH-daKQV9SrFBMEpopjBk3vM1USIHnFWZB9rjJB94/edit?usp=sharing application/vnd.joomla.base.v1 media type specification
+* https://docs.google.com/document/d/1wg3AcgStA26UwDcbHVV1bub4sa_BhsKfzAmX21eG-FM/edit?usp=sharing application/vnd.joomla.service.v1 media type specification
+* https://docs.google.com/document/d/16xwxSDDPW0U1CG9l7JcwOyGvyjm7wv5zOSd9JwgF2iQ/edit?usp=sharing application/vnd.joomla.item.v1 media type specification
+* https://docs.google.com/document/d/1PLym28MG5v1tWyvIyW-9483JNKh5AP21Fmsmg62plnA/edit?usp=sharing application/vnd.joomla.list.v1 media type specification
+* https://docs.google.com/document/d/1d5qQ16r1Bo1BlXXuyS_eFB4BQcfuSg05pn9hsMpAgqk/edit?usp=sharing Joomla CMS Web Service API Implementation
+* https://docs.google.com/document/d/1wI3cSm3y4aa8n8rojJKpiF6RUpSl63WFuLgJj2WqW8o/edit?usp=sharing Joomla CMS CLI Services API Specification

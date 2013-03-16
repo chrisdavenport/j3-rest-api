@@ -1,0 +1,4 @@
+{
+	"joomla:weblinks":"component/weblinks/WeblinksList",
+	"joomla:weblinks/:weblink_id":"component/weblinks/Weblinks"
+}

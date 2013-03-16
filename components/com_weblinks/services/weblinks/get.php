@@ -1,30 +1,30 @@
 <?php
 
-class ComponentContentArticlesGet extends JControllerBase
+class ComponentWeblinksWeblinksGet extends JControllerBase
 {
-	protected $primaryEntity = 'joomla:articles';
+	protected $primaryEntity = 'joomla:weblinks';
 
 	public function execute()
 	{
 		// Create response object.
-		$service = new ComponentContentArticlesApplication;
+		$service = new ApiApplicationHalJoomla;
 
 		// Add basic hypermedia links.
 		$service->addLink(new ApiApplicationHalLink('base', rtrim(JUri::base(), '/')));
 
 		// Set basic metadata.
-		$contentType = 'application/vnd.joomla.list.v1; schema=articles.v1';
+		$contentType = 'application/vnd.joomla.list.v1; schema=weblinks.v1';
 		$service->setMetadata('contentType', $contentType);
-		$service->setMetadata('describedBy', 'http://docs.joomla.org/Schemas/articles/v1');
+		$service->setMetadata('describedBy', 'http://docs.joomla.org/Schemas/weblinks/v1');
 
 		// Get article id from input.
-		$article_id = $this->input->get('article_id');
+		$article_id = $this->input->get('weblink_id');
 
 		// Construct database query.
 		$db = $this->app->getDatabase();
 		$query = $db->getQuery(true);
 		$query->select('*')
-			->from('#__content as a')
+			->from('#__weblinks as w')
 			->where('id = ' . (int) $article_id)
 			;
 
