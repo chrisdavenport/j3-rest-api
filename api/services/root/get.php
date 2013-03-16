@@ -2,19 +2,26 @@
 
 class ApiServicesRootGet extends JControllerBase
 {
+	/*
+	 * Content-Type header.
+	 */
+	protected $contentType = 'application/vnd.joomla.service.v1';
+
+	/**
+	 * Execute the request.
+	 */
 	public function execute()
 	{
+		// Application options.
+		$serviceOptions = array(
+			'contentType' => $this->contentType,
+		);
+
 		// Create response object.
-		$service = new ApiApplicationHalJoomla;
+		$service = new ApiApplicationHalJoomla($serviceOptions);
 
 		// Add basic hypermedia links.
-		$service->addLink(new ApiApplicationHalLink('base', rtrim(JUri::base(), '/')));
 		$service->addLink(new ApiApplicationHalLink('self', '/'));
-
-		// Set basic metadata.
-		$contentType = 'application/vnd.joomla.service.v1';
-		$service->setMetadata('contentType', $contentType);
-		$service->setMetadata('describedBy', 'http://docs.joomla.org/Schemas/service/v1');
 
 		// Look for the top-level resources and add them as links.
 		foreach ($this->app->getMaps() as $route => $map)
@@ -30,7 +37,7 @@ class ApiServicesRootGet extends JControllerBase
 
 		// Push results into the document.
 		$this->app->getDocument()
-//			->setMimeEncoding('application/vnd.joomla.service.v1')		// Comment this line out to debug
+//			->setMimeEncoding($this->contentType)		// Comment this line out to debug
 			->setBuffer($service->getHal())
 			;
 	}

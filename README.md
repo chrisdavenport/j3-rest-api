@@ -42,6 +42,12 @@ the following URL:
 ```
 http://www.example.com/path-to-Joomla/api/hal-browser#http://www.example.com/path-to-Joomla/api
 ```
+Important: You will need to add the following line to your /etc/config.json file in order for
+the HAL Browser to work:
+
+```
+"absoluteHrefs": true
+```
 
 ## Quick tour of the code
 The “core” code lives in the new /api directory, which is the entry point for the API application.
@@ -61,7 +67,7 @@ The code responsible for handling this document can be found in
 /api/services/root/get.php
 ```
 
-## Extending support for a component
+## Adding web services support to a component
 Look at /components/com_content for an example of how this could be done.  The core web services code looks for a services.json file in each of the installed component directories.  If it finds one it automatically merges it into the services router map.
 
 Here’s the one for com_content:
@@ -69,7 +75,7 @@ Here’s the one for com_content:
 ```javascript
 {
     "joomla:articles":"component/content/ArticlesList",
-    "joomla:articles/:article_id":"component/content/Articles"
+    "joomla:articles/:id":"component/content/Articles"
 }
 ```
 
@@ -161,6 +167,7 @@ where
 		the dot refers to a JSON-encoded model field and the part after the dot refers to a field within that JSON-encoded data.
 		The unpacking of JSON-encoded fields is handled automatically.</td>
 	</tr>
+</table>
 
 Some examples:
 
@@ -225,7 +232,8 @@ The following transform is added for the com_content services:-
 	</tr>
 </table>
 
-Because the list representation would not normally include a full representations of each of the embedded objects, there is a simple JSON file that defines which fields are included.  The file for com_content is
+Because the list representation would not normally include a full representation of each of the embeddeded objects,
+there is a simple JSON file that defines which fields are included.  The file for com_content is
 
 ```
 /components/com_content/services/articles/list/embedded.json
@@ -262,14 +270,17 @@ and it contains something like this:
 }
 ```
 
-The array is a simple list of field names to be included in the embedded representations.  Each entry must match a field name in the articles.json file.  The fields definitions from the articles.json file used so that data in both single and list representations should match exactly.
+The array is a simple list of field names to be included in the embedded representations.
+Each entry must match a field name in the articles.json file.  The fields definitions from the resource.json file
+used so that data in both single and list representations should match exactly.
 
 ## References and further reading
 
-* https://docs.google.com/document/d/1FVKGlV6BN6pu-YH2WR2pQHE3Ez7M6r7LD417GSw9ZSo/edit?usp=sharing Joomla CMS Web Services API Specification
-* https://docs.google.com/document/d/11SqH-daKQV9SrFBMEpopjBk3vM1USIHnFWZB9rjJB94/edit?usp=sharing application/vnd.joomla.base.v1 media type specification
-* https://docs.google.com/document/d/1wg3AcgStA26UwDcbHVV1bub4sa_BhsKfzAmX21eG-FM/edit?usp=sharing application/vnd.joomla.service.v1 media type specification
-* https://docs.google.com/document/d/16xwxSDDPW0U1CG9l7JcwOyGvyjm7wv5zOSd9JwgF2iQ/edit?usp=sharing application/vnd.joomla.item.v1 media type specification
-* https://docs.google.com/document/d/1PLym28MG5v1tWyvIyW-9483JNKh5AP21Fmsmg62plnA/edit?usp=sharing application/vnd.joomla.list.v1 media type specification
-* https://docs.google.com/document/d/1d5qQ16r1Bo1BlXXuyS_eFB4BQcfuSg05pn9hsMpAgqk/edit?usp=sharing Joomla CMS Web Service API Implementation
-* https://docs.google.com/document/d/1wI3cSm3y4aa8n8rojJKpiF6RUpSl63WFuLgJj2WqW8o/edit?usp=sharing Joomla CMS CLI Services API Specification
+* Joomla Web Services Working Group http://docs.joomla.org/Web_Services_Working_Group
+* Joomla CMS Web Services API Specification https://docs.google.com/document/d/1FVKGlV6BN6pu-YH2WR2pQHE3Ez7M6r7LD417GSw9ZSo/edit?usp=sharing
+* application/vnd.joomla.base.v1 media type specification https://docs.google.com/document/d/11SqH-daKQV9SrFBMEpopjBk3vM1USIHnFWZB9rjJB94/edit?usp=sharing
+* application/vnd.joomla.service.v1 media type specification https://docs.google.com/document/d/1wg3AcgStA26UwDcbHVV1bub4sa_BhsKfzAmX21eG-FM/edit?usp=sharing
+* application/vnd.joomla.item.v1 media type specification https://docs.google.com/document/d/16xwxSDDPW0U1CG9l7JcwOyGvyjm7wv5zOSd9JwgF2iQ/edit?usp=sharing
+* application/vnd.joomla.list.v1 media type specification https://docs.google.com/document/d/1PLym28MG5v1tWyvIyW-9483JNKh5AP21Fmsmg62plnA/edit?usp=sharing
+* Joomla CMS Web Service API Implementation https://docs.google.com/document/d/1d5qQ16r1Bo1BlXXuyS_eFB4BQcfuSg05pn9hsMpAgqk/edit?usp=sharing
+* Joomla CMS CLI Services API Specification https://docs.google.com/document/d/1wI3cSm3y4aa8n8rojJKpiF6RUpSl63WFuLgJj2WqW8o/edit?usp=sharing

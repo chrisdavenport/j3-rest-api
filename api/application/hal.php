@@ -134,7 +134,15 @@ class ApiApplicationHal
 	{
 		foreach ($object as $name => $value)
 		{
-			$this->properties[$name] = $value;
+			// For _links and _embedded, we merge rather than replace.
+			if ($name == '_links' || $name == '_embedded')
+			{
+				$this->properties[$name] = (object) array_merge((array) $this->properties[$name], (array) $value);
+			}
+			else
+			{
+				$this->properties[$name] = $value;
+			}
 		}
 
 		return $this;

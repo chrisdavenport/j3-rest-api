@@ -27,10 +27,38 @@ class ApiApplicationHalJoomla extends ApiApplicationHal
 	 */
 	protected $offset = 0;
 
+	/*
+	 * Resource id.
+	 * Only used for single resources (not collections).
+	 */
+	protected $resourceId = 0;
+
+	/*
+	 * Resource map filename.
+	 */
+	protected $resourceMapFile = '';
+
+	/*
+	 * Resource map.
+	 */
+	protected $resourceMap = array();
+
+	/*
+	 * Embedded map filename.
+	 */
+	protected $embeddedMapFile = '';
+
+	/*
+	 * Embedded resource map.
+	 */
+	protected $embeddedMap = array();
+
 	/**
 	 * Constructor.
+	 *
+	 * @param  array  $options  Array of configuration options.
 	 */
-	public function __construct()
+	public function __construct($options = array())
 	{
 		// Create a metadata object.
 		$this->meta = new stdClass;
@@ -42,6 +70,89 @@ class ApiApplicationHalJoomla extends ApiApplicationHal
 		$joomlaCurie->name = 'joomla';
 		$joomlaCurie->templated = true;
 		$this->addLink($joomlaCurie);
+
+		// Add basic hypermedia links.
+		$this->addLink(new ApiApplicationHalLink('base', rtrim(JUri::base(), '/')));
+
+		// Get resource id.
+		$this->resourceId = isset($options['resourceId']) ? $options['resourceId'] : 0;
+
+		// Set the content type.
+		if (isset($options['contentType']))
+		{
+			$this->setMetadata('contentType', $options['contentType']);
+		}
+
+		// Set link to (human-readable) schema documentation.
+		if (isset($options['describedBy']))
+		{
+			$this->setMetadata('describedBy', $options['describedBy']);
+		}
+
+		// Load the resource field map (if there is one).
+		$this->resourceMapFile = isset($options['resourceMap']) ? $options['resourceMap'] : '';
+		if ($this->resourceMapFile != '' && file_exists($this->resourceMapFile))
+		{
+			$this->resourceMap = json_decode(file_get_contents($this->resourceMapFile), true);
+		}
+
+		// Load the embedded field map (if there is one).
+		$this->embeddedMapFile = isset($options['embeddedMap']) ? $options['embeddedMap'] : '';
+		if ($this->embeddedMapFile != '' && file_exists($this->embeddedMapFile))
+		{
+			// Load the embedded fields list.
+			$embeddedList = json_decode(file_get_contents($this->embeddedMapFile), true);
+
+			// The "embedded" array will contain a list of field names to be retained.
+			if (isset($embeddedList['embedded']))
+			{
+				foreach ($embeddedList['embedded'] as $fieldName)
+				{
+					if (isset($this->resourceMap[$fieldName]))
+					{
+						$this->embeddedMap[$fieldName] = $this->resourceMap[$fieldName];
+					}
+				}
+			}
+		}
+	}
+
+	/**
+	 * Import data into HAL object.
+	 *
+	 * @param  string $name  Name (rel) of data to be imported.
+	 * @param  array  $data  Array of data items.
+	 *
+	 * @return object This object may be chained.
+	 */
+	public function embed($name, $data)
+	{
+		// If there is no map then use the standard embed method.
+		if (empty($this->embeddedMap))
+		{
+			return parent::embed($name, $data);
+		}
+
+		// Transform the source data array.
+		$resources = array();
+		foreach ($data as $key => $datum)
+		{
+			$resources[$key] = $this->transform($datum, $this->embeddedMap);
+		}
+
+		// Embed data into HAL object.
+		parent::embed($name, $resources);
+
+		// Set pagination properties.
+		$this->setMetadata('totalItems', count($resources));
+		$this->setMetadata('totalPages', floor(count($resources)/$this->perPage) + 1);
+
+		// Add pagination URI template (per RFC6570).
+		$pagesLink = new ApiApplicationHalLink('pages', '/' . $name . '{?fields,offset,page,perPage,sort}');
+		$pagesLink->templated = true;
+		$this->addLink($pagesLink);
+
+		return $this;
 	}
 
 	/**
@@ -77,42 +188,13 @@ class ApiApplicationHalJoomla extends ApiApplicationHal
 	}
 
 	/**
-	 * Import data into HAL object.
+	 * Method to return the current resource id.
 	 *
-	 * @param  string $name  Name (rel) of data to be imported.
-	 * @param  array  $data  Array of data items.
-	 * @param  array  $map   Array of maps.
-	 *
-	 * @return object This object may be chained.
+	 * @return integer Resource id.
 	 */
-	public function embed($name, $data, $map = array())
+	public function getResourceId()
 	{
-		// If there is no map then use the standard embed method.
-		if (empty($map))
-		{
-			return parent::embed($name, $data);
-		}
-
-		// Transform the source data array.
-		$resources = array();
-		foreach ($data as $key => $datum)
-		{
-			$resources[$key] = $this->transform($datum, $map);
-		}
-
-		// Embed data into HAL object.
-		parent::embed($name, $resources);
-
-		// Set pagination properties.
-		$this->setMetadata('totalItems', count($resources));
-		$this->setMetadata('totalPages', floor(count($resources)/$this->perPage) + 1);
-
-		// Add pagination URI template (per RFC6570).
-		$pagesLink = new ApiApplicationHalLink('pages', '/' . $name . '{?fields,offset,page,perPage,sort}');
-		$pagesLink->templated = true;
-		$this->addLink($pagesLink);
-
-		return $this;
+		return (int) $this->resourceId;
 	}
 
 	/**
@@ -208,19 +290,18 @@ class ApiApplicationHalJoomla extends ApiApplicationHal
 	 * Method to load an object into this HAL object.
 	 *
 	 * @param  object  $object  Object whose properties are to be loaded.
-	 * @param  array   $map     Array of maps.
 	 *
 	 * @return object This object for chaining.
 	 */
-	public function load($object, $map = array())
+	public function load($object)
 	{
 		// If there is no map then use the standard load method.
-		if (empty($map))
+		if (empty($this->resourceMap))
 		{
 			return parent::load($object);
 		}
 
-		parent::load($this->transform($object, $map));
+		parent::load($this->transform($object, $this->resourceMap));
 
 		return $this;
 	}
@@ -233,7 +314,7 @@ class ApiApplicationHalJoomla extends ApiApplicationHal
 	 *
 	 * @return object Transformed data.
 	 */
-	public function transform($sourceData, $map = array())
+	protected function transform($sourceData, $map = array())
 	{
 		// If there is no map then return the source data unmodified.
 		if (empty($map))
@@ -251,7 +332,7 @@ class ApiApplicationHalJoomla extends ApiApplicationHal
 			// Note that objectName is optional; default is "main".
 			list($halFieldPath, $halFieldName) = explode('/', $halField);
 
-			// If we have a non-empty objectName then make sure we have an object.
+			// If we have a non-empty objectName then make sure we have an object with that name.
 			$targetContext = $halFieldPath == '' ? 'main' : $halFieldPath;
 			if (!isset($targetData[$targetContext]))
 			{
