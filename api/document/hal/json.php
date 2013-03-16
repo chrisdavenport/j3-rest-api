@@ -28,6 +28,11 @@ class ApiDocumentHalJson extends JDocument
 	protected $_name = 'joomla';
 
 	/**
+	 * Render hrefs as absolute or relative?
+	 */
+	protected $absoluteHrefs = false;
+
+	/**
 	 * Class constructor
 	 *
 	 * @param   array  $options  Associative array of options
@@ -43,6 +48,9 @@ class ApiDocumentHalJson extends JDocument
 
 		// Set document type.
 		$this->_type = 'hal+json';
+
+		// Set absolute/relative hrefs.
+		$this->absoluteHrefs = isset($options['absoluteHrefs']) ? $options['absoluteHrefs'] : false;
 	}
 
 	/**
@@ -74,6 +82,28 @@ class ApiDocumentHalJson extends JDocument
 		// Get the HAL object from the buffer.
 		$hal = $this->getBuffer();
 
+		// If required, change relative links to absolute.
+		if ($this->absoluteHrefs)
+		{
+			// Adjust hrefs in the _links object.
+			$this->relToAbs($hal->_links);
+
+			// Adjust hrefs in the _embedded object (if there is one).
+			if (isset($hal->_embedded))
+			{
+				foreach ($hal->_embedded as $rel => $resources)
+				{
+					foreach ($resources as $id => $resource)
+					{
+						if (isset($resource->_links))
+						{
+							$this->relToAbs($resource->_links);
+						}
+					}
+				}
+			}
+		}
+
 		// Return it as a JSON string.
 		return json_encode($hal);
 	}
@@ -88,6 +118,23 @@ class ApiDocumentHalJson extends JDocument
 	public function getName()
 	{
 		return $this->_name;
+	}
+
+	/**
+	 * Method to convert relative to absolute links.
+	 *
+	 * @param  object $links  Links object (eg. _links).
+	 */
+	protected function relToAbs($links)
+	{
+		// Adjust hrefs in the _links object.
+		foreach ($links as $rel => $link)
+		{
+			if (substr($link->href, 0, 1) == '/')
+			{
+				$links->$rel->href = rtrim(JUri::base(), '/') . $link->href;
+			}
+		}
 	}
 
 	/**

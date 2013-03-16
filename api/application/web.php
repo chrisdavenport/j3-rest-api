@@ -175,11 +175,15 @@ class ApiApplicationWeb extends JApplicationWeb
 	 */
 	protected function doExecute()
 	{
+		$documentOptions = array(
+			'absoluteHrefs' => $this->get('absoluteHrefs', false),
+		);
+
 		try
 		{
 			// Set the controller prefix, add maps, and execute the appropriate controller.
 			$this->input = new JInputJson;
-			$this->document = new ApiDocumentHalJson;
+			$this->document = new ApiDocumentHalJson($documentOptions);
 			$this->router->setControllerPrefix('ApiServices')
 				->setDefaultController('Root')
 				->addMaps($this->maps)
@@ -206,7 +210,7 @@ class ApiApplicationWeb extends JApplicationWeb
 	 *
 	 * @since   3.1
 	 */
-	protected function fetchApiConfigurationData($file = '', $class = 'JConfig')
+	public function fetchApiConfigurationData($file = '', $class = 'JConfig')
 	{
 		// Instantiate variables.
 		$config = array();

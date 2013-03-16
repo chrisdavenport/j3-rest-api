@@ -77,7 +77,7 @@ try
 
 	// Execute the application.
 	$application->loadSession()
-//		->loadConfiguration($application->fetchApiConfigurationData())
+		->loadConfiguration($application->fetchApiConfigurationData())
 		->loadDatabase()
 		->fetchStandardMaps()
 		->loadRouter()
