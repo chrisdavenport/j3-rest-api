@@ -1,2 +1,4 @@
 {
+	"joomla:categories":"CategoriesList",
+	"joomla:categories/:id":"Categories"
 }

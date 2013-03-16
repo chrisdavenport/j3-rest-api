@@ -52,9 +52,12 @@ the HAL Browser to work:
 ## Quick tour of the code
 The “core” code lives in the new /api directory, which is the entry point for the API application.
 
-Basic configuration files go in /etc although the current version doesn’t really use them because it loads the standard Joomla configuration.php file to get the database credentials.  So just ignore them for now.
+Basic configuration files go in /etc although standard Joomla configuration.php file is also loaded in order to get the database credentials.
 
-A new /services directory will have been added to /components/com_content.  This demonstrates how an extension can have web services code added to it.  The current code does not make use of any component code, but sharing model code at least is something that should be seriously considered.
+A new /services directory will have been added to each component for which support has been provided.
+The currently supported components are: articles/content, categories and weblinks.
+They demonstrate how an extension can have web services code added to it.  The current code does not make use of any component code,
+and installing it does not overwrite any current code, but sharing model code at least is something that should be seriously considered.
 
 In the distributed code the Content-Type headers returned have been set to application/json so as to make it easy to test in a web browser.  However, the correct Content-Types (eg. application/vnd.joomla.service.v1+hal+json”) may be returned by uncommenting a line in the get.php files.
 

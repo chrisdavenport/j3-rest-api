@@ -1,0 +1,18 @@
+{
+	"embedded":
+	[
+		"/access",
+		"/description",
+		"/extension",
+		"/language",
+		"_links/self.href",
+		"_links/joomla:checkout.href",
+		"_links/joomla:checkout.method",
+		"metadata/authorName",
+		"/ordering",
+		"publish/alias",
+		"publish/created",
+		"/state",
+		"/title"
+	]
+}
