@@ -35,6 +35,14 @@ Point a web browser at [path-to-Joomla]/api
 
 You should get some JSON back.  This is the entry point service document described below.
 
+## Using the HAL Browser
+You can browse the API interactively using Mike Kelly's HAL Browser, included in the repository.  Simply point a web browser at
+the following URL:
+
+```
+http://www.example.com/path-to-Joomla/api/hal-browser#http://www.example.com/path-to-Joomla/api
+```
+
 ## Quick tour of the code
 The “core” code lives in the new /api directory, which is the entry point for the API application.
 
