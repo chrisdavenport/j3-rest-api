@@ -15,13 +15,11 @@ class ApiServicesRootGet extends JControllerBase
 		// Application options.
 		$serviceOptions = array(
 			'contentType' => $this->contentType,
+			'self' => '/',
 		);
 
 		// Create response object.
 		$service = new ApiApplicationHalJoomla($serviceOptions);
-
-		// Add basic hypermedia links.
-		$service->addLink(new ApiApplicationHalLink('self', '/'));
 
 		// Look for the top-level resources and add them as links.
 		foreach ($this->app->getMaps() as $route => $map)

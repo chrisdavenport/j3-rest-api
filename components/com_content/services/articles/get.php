@@ -21,23 +21,27 @@ class ComponentContentArticlesGet extends JControllerBase
 		$serviceOptions = array(
 			'contentType' => $this->contentType,
 			'describedBy' => 'http://docs.joomla.org/Schemas/articles/v1',
-			'resourceId'  => $this->input->get('id'),
 			'resourceMap' => __DIR__ . '/resource.json',
 		);
 
-		// Create response object.
-		$service = new ComponentContentArticlesApplication($serviceOptions);
-
-		// Construct database query.
+		// Get database object.
 		$db = $this->app->getDatabase();
-		$query = $db->getQuery(true);
-		$query->select('*')
+
+		// Create a database query object.
+		$query = $db->getQuery(true)
+			->select('*')
 			->from('#__content as a')
-			->where('id = ' . (int) $service->getResourceId())
 			;
 
-		// Retrieve single record from database.
-		$data = $db->setQuery($query)->loadObject();
+		// Get a database query helper object.
+		$apiQuery = new ApiDatabaseQuery($db);
+
+		// Create response object.
+		$service = new ApiApplicationHalJoomla($serviceOptions);
+		$service->addLink(new ApiApplicationHalLink($this->primaryEntity, '/' . $this->primaryEntity));
+
+		// Get single record from database.
+		$data = $apiQuery->getItem($query, (int) $this->input->get('id'));
 
 		// Load the data into the HAL object.
 		$service->load($data);

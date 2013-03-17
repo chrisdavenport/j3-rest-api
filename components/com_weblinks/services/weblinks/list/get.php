@@ -23,28 +23,34 @@ class ComponentWeblinksWeblinksListGet extends JControllerBase
 			'describedBy' => 'http://docs.joomla.org/Schemas/weblinks/v1',
 			'embeddedMap' => __DIR__ . '/embedded.json',
 			'resourceMap' => __DIR__ . '/../resource.json',
+			'self' => '/' . $this->primaryEntity,
 		);
+
+		// Get database object.
+		$db = $this->app->getDatabase();
+
+		// Create a database query object.
+		$query = $db->getQuery(true)
+			->select('*')
+			->from('#__weblinks as a')
+			;
+
+		// Get a database query helper object.
+		$apiQuery = new ApiDatabaseQuery($db);
+
+		// Set pagination variables from input.
+		$page = array(
+			'offset'  => (int) $this->input->get('offset', 0),
+			'page'    => (int) $this->input->get('page', 1),
+			'perPage' => (int) $this->input->get('perPage', 10),
+		);
+
+		// Get page of data.
+		$data = $apiQuery->setPagination($page)->getList($query);
 
 		// Create response object.
 		$service = new ApiApplicationHalJoomla($serviceOptions);
-
-		// Add basic hypermedia links.
-		$service->addLink(new ApiApplicationHalLink('self', '/' . $this->primaryEntity));
-
-		// Set pagination.
-		$offset = 0;
-		$page = 1;
-		$perPage = 10;
-		$base = ($page - 1) * $perPage + $offset;
-		$service->setPagination($page, $perPage, $offset);
-
-		// Query the database.
-		$db = $this->app->getDatabase();
-		$query = $db->getQuery(true);
-		$query->select('*')
-			->from('#__weblinks as a')
-			;
-		$data = $db->setQuery($query, $base, $perPage)->loadObjectList();
+		$service->setPagination($apiQuery->getPagination());
 
 		// Import the data into the HAL object.
 		$service->embed($this->primaryEntity, $data);

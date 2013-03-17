@@ -1,0 +1,19 @@
+{
+	"/access":"int:{access}",
+	"/language":"string:{language}",
+	"/level":"int:{level}",
+	"_links/self.href":"string:/joomla:menuitems/{id}",
+	"_links/joomla:checkin.href":"string:/joomla:menuitems/{id}?checkin",
+	"_links/joomla:checkin.method":"string:post",
+	"_links/joomla:checkout.href":"string:/joomla:menuitems/{id}?checkout",
+	"_links/joomla:checkout.method":"string:post",
+	"_links/joomla:image.href":"string:{img}",
+	"_links/joomla:menus.href":"string:/joomla:menus/{menu_id}",
+	"/note":"string:{note}",
+	"publish/alias":"string:{alias}",
+	"render/linkTitle":"string:{params.menu-anchor_title}",
+	"render/linkCss":"string:{params.menu-anchor_css}",
+	"/state":"state:{published}",
+	"/title":"string:{title}",
+	"/type":"string:{type}"
+}

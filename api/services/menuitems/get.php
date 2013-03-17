@@ -1,16 +1,16 @@
 <?php
 
-class ComponentWeblinksWeblinksGet extends JControllerBase
+class ApiServicesMenuitemsGet extends JControllerBase
 {
 	/*
 	 * Name of the primary resource.
 	 */
-	protected $primaryEntity = 'joomla:weblinks';
+	protected $primaryEntity = 'joomla:menuitems';
 
 	/*
 	 * Content-Type header.
 	 */
-	protected $contentType = 'application/vnd.joomla.item.v1; schema=weblinks.v1';
+	protected $contentType = 'application/vnd.joomla.item.v1';
 
 	/**
 	 * Execute the request.
@@ -20,7 +20,7 @@ class ComponentWeblinksWeblinksGet extends JControllerBase
 		// Application options.
 		$serviceOptions = array(
 			'contentType' => $this->contentType,
-			'describedBy' => 'http://docs.joomla.org/Schemas/weblinks/v1',
+			'describedBy' => 'http://docs.joomla.org/Schemas/menuitems/v1',
 			'resourceMap' => __DIR__ . '/resource.json',
 		);
 
@@ -29,8 +29,9 @@ class ComponentWeblinksWeblinksGet extends JControllerBase
 
 		// Create a database query object.
 		$query = $db->getQuery(true)
-			->select('*')
-			->from('#__weblinks as a')
+			->select('m.*, mt.id AS menu_id')
+			->from('#__menu AS m')
+			->leftjoin('#__menu_types AS mt ON m.menutype = mt.menutype')
 			;
 
 		// Get a database query helper object.
@@ -41,7 +42,7 @@ class ComponentWeblinksWeblinksGet extends JControllerBase
 		$service->addLink(new ApiApplicationHalLink($this->primaryEntity, '/' . $this->primaryEntity));
 
 		// Get single record from database.
-		$data = $apiQuery->getItem($query, (int) $this->input->get('id'));
+		$data = $apiQuery->getItem($query, (int) $this->input->get('id'), 'm.id');
 
 		// Load the data into the HAL object.
 		$service->load($data);

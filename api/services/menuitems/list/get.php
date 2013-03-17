@@ -1,11 +1,11 @@
 <?php
 
-class ApiServicesCategoriesListGet extends JControllerBase
+class ApiServicesMenuitemsListGet extends JControllerBase
 {
 	/*
 	 * Name of the primary resource.
 	 */
-	protected $primaryEntity = 'joomla:categories';
+	protected $primaryEntity = 'joomla:menuitems';
 
 	/*
 	 * Content-Type header.
@@ -20,7 +20,7 @@ class ApiServicesCategoriesListGet extends JControllerBase
 		// Application options.
 		$serviceOptions = array(
 			'contentType' => $this->contentType,
-			'describedBy' => 'http://docs.joomla.org/Schemas/categories/v1',
+			'describedBy' => 'http://docs.joomla.org/Schemas/menuitems/v1',
 			'embeddedMap' => __DIR__ . '/embedded.json',
 			'resourceMap' => __DIR__ . '/../resource.json',
 			'self' => '/' . $this->primaryEntity,
@@ -31,8 +31,9 @@ class ApiServicesCategoriesListGet extends JControllerBase
 
 		// Create a database query object.
 		$query = $db->getQuery(true)
-			->select('*')
-			->from('#__categories as c')
+			->select('m.*, mt.id AS menu_id')
+			->from('#__menu AS m')
+			->leftjoin('#__menu_types AS mt ON m.menutype = mt.menutype')
 			;
 
 		// Get a database query helper object.

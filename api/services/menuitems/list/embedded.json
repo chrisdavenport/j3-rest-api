@@ -1,0 +1,17 @@
+{
+	"embedded":
+	[
+		"/access",
+		"/language",
+		"/level",
+		"_links/self.href",
+		"_links/joomla:checkout.href",
+		"_links/joomla:checkout.method",
+		"_links/joomla:image.href",
+		"_links/joomla:menus.href",
+		"publish/alias",
+		"/state",
+		"/title",
+		"/type"
+	]
+}

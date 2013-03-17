@@ -136,7 +136,8 @@ class ApiApplicationWeb extends JApplicationWeb
 	protected function loadMaps($maps = array())
 	{
 		// If route indicates a traditional Joomla component then register special prefix.
-		foreach ($maps as $key => $route){
+		foreach ($maps as $key => $route)
+		{
 			$parts = explode('/', $route);
 			if ($parts[0] == 'component')
 			{
