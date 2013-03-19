@@ -1,4 +1,5 @@
 {
 	"joomla:articles":"component/content/ArticlesList",
-	"joomla:articles/:id":"component/content/Articles"
+	"joomla:articles/:id":"component/content/Articles",
+	"joomla:categories/:catid/articles":"component/content/ArticlesList"
 }

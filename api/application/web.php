@@ -135,6 +135,9 @@ class ApiApplicationWeb extends JApplicationWeb
 	 */
 	protected function loadMaps($maps = array())
 	{
+		// Make sure we have an array.
+		$maps = (array) $maps;
+
 		// If route indicates a traditional Joomla component then register special prefix.
 		foreach ($maps as $key => $route)
 		{

@@ -35,6 +35,13 @@ class ComponentContentArticlesListGet extends JControllerBase
 			->from('#__content as a')
 			;
 
+		// Are we linking from categories?
+		$catid = (int) $this->input->get('catid');
+		if ($catid)
+		{
+			$query->where($db->qn('catid') . ' = ' . $catid);
+		}
+
 		// Get a database query helper object.
 		$apiQuery = new ApiDatabaseQuery($db);
 

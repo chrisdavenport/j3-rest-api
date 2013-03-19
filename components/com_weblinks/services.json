@@ -1,4 +1,5 @@
 {
 	"joomla:weblinks":"component/weblinks/WeblinksList",
-	"joomla:weblinks/:id":"component/weblinks/Weblinks"
+	"joomla:weblinks/:id":"component/weblinks/Weblinks",
+	"joomla:categories/:catid/weblinks":"component/weblinks/WeblinksList"
 }

@@ -83,7 +83,7 @@ class ApiDocumentHalJson extends JDocument
 		$hal = $this->getBuffer();
 
 		// If required, change relative links to absolute.
-		if ($this->absoluteHrefs)
+		if ($this->absoluteHrefs && $hal instanceof ApiApplicationHal)
 		{
 			// Adjust hrefs in the _links object.
 			$this->relToAbs($hal->_links);
