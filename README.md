@@ -79,6 +79,7 @@ Here’s the one for com_content:
 {
     "joomla:articles":"component/content/ArticlesList",
     "joomla:articles/:id":"component/content/Articles"
+	"joomla:categories/:catid/articles":"component/content/ArticlesList"
 }
 ```
 
@@ -114,6 +115,15 @@ The document returned in this case will contain a representation of the single a
 
 The fields returned for the articles resource are described in https://docs.google.com/a/joomla.org/document/d/1d5qQ16r1Bo1BlXXuyS_eFB4BQcfuSg05pn9hsMpAgqk/edit#heading=h.ygla5naoxuzt
 
+The third line of the services.json file maps URLs such as
+
+```
+http://www.example.com/api/joomla:categories/383/articles
+```
+
+to the same controller as the first line.  In this instance it will return a list of all articles which are in category 383.
+
+## Resource - database field mapping
 In order to establish the mapping between the database fields and the fields exposed in the API, a JSON object describes the relationship so that in many (most?) cases, adding web services support to an existing component is mostly a matter of creating these map files.
 
 The map is located in a resource.json file.  So for com_content, for example, you should look in the file
