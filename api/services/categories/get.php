@@ -1,48 +1,52 @@
 <?php
+/**
+ * @package     Joomla.Services
+ *
+ * @copyright   Copyright (C) 2005 - 2013 Open Source Matters, Inc. All rights reserved.
+ * @license     GNU General Public License version 2 or later; see LICENSE
+ */
 
-class ApiServicesCategoriesGet extends JControllerBase
+class ApiServicesCategoriesGet extends ApiControllerItem
 {
-	/*
-	 * Name of the primary resource.
+	/**
+	 * Constructor.
+	 *
+	 * @param   JInput            $input  The input object.
+	 * @param   JApplicationBase  $app    The application object.
 	 */
-	protected $primaryEntity = 'joomla:categories';
+	public function __construct(JInput $input = null, JApplicationBase $app = null)
+	{
+		parent::__construct($input, $app);
 
-	/*
-	 * Content-Type header.
-	 */
-	protected $contentType = 'application/vnd.joomla.item.v1';
+		// Use the default database.
+		$this->setDatabase();
+
+		// Set the controller options.
+		$serviceOptions = array(
+			'contentType' => 'application/vnd.joomla.item.v1; schema=categories.v1',
+			'describedBy' => 'http://docs.joomla.org/Schemas/categories/v1',
+			'primaryRel'  => 'joomla:categories',
+			'resourceMap' => __DIR__ . '/resource.json',
+			'self' 		  => '/joomla:categories/' . (int) $this->input->get('id'),
+			'tableName'   => '#__categories',
+		);
+
+		$this->setOptions($serviceOptions);
+	}
 
 	/**
 	 * Execute the request.
 	 */
 	public function execute()
 	{
-		// Application options.
-		$serviceOptions = array(
-			'contentType' => $this->contentType,
-			'describedBy' => 'http://docs.joomla.org/Schemas/categories/v1',
-			'resourceMap' => __DIR__ . '/resource.json',
-		);
+		// Get resource item id from input.
+		$this->id = (int) $this->input->get('id');
 
-		// Get database object.
-		$db = $this->app->getDatabase();
+		// Get resource item data.
+		$data = $this->getData();
 
-		// Create a database query object.
-		$query = $db->getQuery(true)
-			->select('*')
-			->from('#__categories as c')
-			;
-
-		// Get a database query helper object.
-		$apiQuery = new ApiDatabaseQuery($db);
-
-		// Create response object.
-		$service = new ApiApplicationHalJoomla($serviceOptions);
-		$service->addLink(new ApiApplicationHalLink($this->primaryEntity, '/' . $this->primaryEntity));
-
-		// Get single record from database.
-		$id = (int) $this->input->get('id');
-		$data = $apiQuery->getItem($query, $id);
+		// Get service object.
+		$service = $this->getService();
 
 		// We need to add a link from the current category to the content items that
 		// exist within the category.  However, we only know the name of the extension
@@ -72,7 +76,7 @@ class ApiServicesCategoriesGet extends JControllerBase
 					{
 						// Add a link to the resources associated with the category.
 						$linkRel = 'joomla:' . strtolower($matches[1]);
-						$linkHref = '/' . str_replace(':catid', $id, $rel);
+						$linkHref = '/' . str_replace(':catid', $this->id, $rel);
 						$service->addLink(new ApiApplicationHalLink($linkRel, $linkHref));
 					}
 				}
@@ -82,13 +86,7 @@ class ApiServicesCategoriesGet extends JControllerBase
 		// Load the data into the HAL object.
 		$service->load($data);
 
-		// Response may be cached.
-		$this->app->allowCache(true);
-
-		// Push results into the document.
-		$this->app->getDocument()
-//			->setMimeEncoding($this->contentType)		// Comment this line out to debug
-			->setBuffer($service->getHal())
-			;
+		parent::execute();
 	}
+
 }

@@ -1,4 +1,10 @@
 <?php
+/**
+ * @package     Joomla.Services
+ *
+ * @copyright   Copyright (C) 2005 - 2013 Open Source Matters, Inc. All rights reserved.
+ * @license     GNU General Public License version 2 or later; see LICENSE.txt
+ */
 
 /**
  * Class to represent a Joomla HAL object.
@@ -196,10 +202,6 @@ class ApiApplicationHalJoomla extends ApiApplicationHal
 		$sourceFieldType = substr($sourceDefinition, 0, $pos);
 		$definition = substr($sourceDefinition, $pos+1);
 
-		// Construct the name of the method to do the transform (default is toString).
-		$methodName = 'transform' . $sourceFieldType;
-		$methodName = method_exists($this, $methodName) ? $methodName : 'transformString';
-
 		// Look for source field names.  These are surrounded by curly brackets.
 		preg_match_all('/\{(.*)\}/U', $definition, $matches);
 
@@ -215,8 +217,8 @@ class ApiApplicationHalJoomla extends ApiApplicationHal
 			$definition = str_replace($matches[0], $matches[1], $definition);
 		}
 
-		// Transform the value depending on its type (default is string).
-		$return = $this->$methodName($definition, $sourceData);
+		// Transform the value depending on its type.
+		$return = $this->transformField($sourceFieldType, $definition, $sourceData);
 
 		return $return;
 	}
@@ -422,185 +424,50 @@ class ApiApplicationHalJoomla extends ApiApplicationHal
 	}
 
 	/**
-	 * Method to transform a value to a boolean.
+	 * Transform a source field data value.
 	 *
-	 * @param  string   $definition  Field definition.
-	 * @param  mixed    $data        Source data.
+	 * Calls the static execute method of a transform class.
+	 * First looks for the transform class in the /transform directory
+	 * in the same directory as the resource.json file.  Then looks
+	 * for it in the /api/transform directory.
 	 *
-	 * @return string Transformed value.
+	 * @param  string  $fieldType   Field type.
+	 * @param  string  $definition  Field definition.
+	 * @param  string  $data        Data to be transformed.
+	 *
+	 * @return mixed Transformed data.
 	 */
-	protected function transformBoolean($definition, $data)
+	protected function transformField($fieldType, $definition, $data)
 	{
-		if ($definition == 'true')
+		// Get the path to the resource.json file.
+		$path = str_replace(JPATH_BASE, '', dirname($this->resourceMapFile));
+
+		// Explode it and make some adjustments.
+		$parts = explode('/', $path);
+		foreach ($parts as $k => $part)
 		{
-			return true;
+			$parts[$k] = ucfirst(str_replace('com_', '', $part));
+			if ($part == 'components')
+			{
+				$parts[$k] = 'Component';
+			}
+			if ($part == 'services')
+			{
+				unset($parts[$k]);
+			}
 		}
 
-		if ($definition == 'false')
+		// Construct the name of the method to do the transform (default is toString).
+		$className = implode('', $parts) . 'Transform' . ucfirst($fieldType);
+		if (!class_exists($className))
 		{
-			return false;
+			$className = 'ApiTransform' . ucfirst($fieldType);
 		}
 
-		return (boolean) $definition;
-	}
-
-	/**
-	 * Method to transform a value to a date-time.
-	 *
-	 * @param  string   $definition  Field definition.
-	 * @param  mixed    $data        Source data.
-	 *
-	 * @return string Transformed value.
-	 */
-	protected function transformDateTime($definition, $data)
-	{
-		// @TODO Convert MySQL data string to ISO 8601.
-		return (string) $definition;
-	}
-
-	/**
-	 * Method to transform a value to a float string.
-	 *
-	 * @param  string   $definition  Field definition.
-	 * @param  mixed    $data        Source data.
-	 *
-	 * @return string Transformed value.
-	 */
-	protected function transformFloat($definition, $data)
-	{
-		switch ($definition)
-		{
-			case '':
-				$return = 'global';
-				break;
-
-			case 'left':
-			case 'right':
-			case 'none':
-				$return = $definition;
-				break;
-
-			default:
-				$return = 'undefined';
-				break;
-		}
+		// Execute the transform.
+		$return = $className::execute($definition, $data);
 
 		return $return;
-	}
-
-	/**
-	 * Method to transform a value to an integer.
-	 *
-	 * @param  string   $definition  Field definition.
-	 * @param  mixed    $data        Source data.
-	 *
-	 * @return string Transformed value.
-	 */
-	protected function transformInt($definition, $data)
-	{
-		return (int) $definition;
-	}
-
-	/**
-	 * Method to transform a value to standard state string.
-	 *
-	 * @param  string   $definition  Field definition.
-	 * @param  mixed    $data        Source data.
-	 *
-	 * @return string Transformed value.
-	 */
-	protected function transformState($definition, $data)
-	{
-		switch ($definition)
-		{
-			case 0:
-				$return = 'unpublished';
-				break;
-			case 1:
-				$return = 'published';
-				break;
-			default:
-				$return = 'undefined';
-				break;
-		}
-
-		return $return;
-	}
-
-	/**
-	 * Method to transform a value to a string.
-	 *
-	 * @param  string   $definition  Field definition.
-	 * @param  mixed    $data        Source data.
-	 *
-	 * @return string Transformed value.
-	 */
-	protected function transformString($definition, $data)
-	{
-		return (string) $definition;
-	}
-
-	/**
-	 * Method to transform a value to standard target string.
-	 *
-	 * @param  string   $definition  Field definition.
-	 * @param  mixed    $data        Source data.
-	 *
-	 * @return string Transformed value.
-	 */
-	protected function transformTarget($definition, $data)
-	{
-		switch ($definition)
-		{
-			case '':
-				$return = 'global';
-				break;
-			case 0:
-				$return = 'parent';
-				break;
-			case 1:
-				$return = 'new';
-				break;
-			case 2:
-				$return = 'popup';
-				break;
-			case 3:
-				$return = 'modal';
-				break;
-			default:
-				$return = 'undefined';
-				break;
-		}
-
-		return $return;
-	}
-
-	/**
-	 * Method to transform a value to yes/no/global.
-	 *
-	 * @param  string   $definition  Field definition.
-	 * @param  mixed    $data        Source data.
-	 *
-	 * @return string Transformed value.
-	 */
-	protected function transformYNGlobal($definition, $data)
-	{
-		if ($definition == '')
-		{
-			return 'global';
-		}
-
-		if ($definition == 0)
-		{
-			return 'no';
-		}
-
-		if ($definition == 1)
-		{
-			return 'yes';
-		}
-
-		return 'undefined';
 	}
 
 }

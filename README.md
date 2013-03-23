@@ -1,19 +1,28 @@
 j3-rest-api
 ===========
-This is an experimental REST API for Joomla 3.x and these are some rough notes to get you started.  DO NOT PUT THIS ON A PRODUCTION SITE.  This is proof-of-concept code that is far from being complete or stable.  There is no access level security (yet) so any content in your website will be publicly exposed by this code.
+This is an experimental REST API for Joomla 3.x and these are some rough notes to
+get you started.  DO NOT PUT THIS ON A PRODUCTION SITE.  This is proof-of-concept
+code that is far from being complete or stable.  There is no access level security
+(yet) so any content in your website will be publicly exposed by this code.
 
 ## Introduction
-This proof-of-concept demonstrates how a web services API might be created for Joomla 3.x.  It runs as a standalone application which merges services that have been added to otherwise completely unmodified components.  No core code is changed.
+This proof-of-concept demonstrates how a web services API might be created for
+Joomla 3.x.  It runs as a standalone application which merges services that have
+been added to otherwise completely unmodified components.  No core code is changed.
 
-The web services code makes use of the RESTful router included in the Joomla Platform code in Joomla 3.x.
+The web services code makes use of the RESTful router included in the
+Joomla Platform code in Joomla 3.x.
 
-Any and all feedback is welcome, particularly at this stage regarding the architecture.  Please send your comments to chris.davenport@joomla.org.  Pull requests also welcome of course. Thanks!
+Any and all feedback is welcome, particularly at this stage regarding the
+architecture.  Please send your comments to chris.davenport@joomla.org.
+ Pull requests also welcome of course. Thanks!
 
 ## Prerequisites
 You must have an already installed and working installation of Joomla 3.x.
 
 ## Installation
-Grab the code from GitHub: https://github.com/chrisdavenport/j3-rest-api and put it in your Joomla web root.
+Grab the code from GitHub: https://github.com/chrisdavenport/j3-rest-api and put
+it in your Joomla web root.
 
 Add the following lines to your .htaccess file:
 
@@ -33,37 +42,48 @@ RewriteRule .* api/index.php [L]
 
 Point a web browser at [path-to-Joomla]/api
 
-You should get some JSON back.  This is the entry point service document described below.
+You should get some JSON back.  This is the entry point service document described
+below.
 
 ## Using the HAL Browser
-You can browse the API interactively using Mike Kelly's HAL Browser, included in the repository.  Simply point a web browser at
-the following URL:
+You can browse the API interactively using Mike Kelly's HAL Browser, included in
+the repository.  Simply point a web browser at the following URL:
 
 ```
 http://www.example.com/path-to-Joomla/api/hal-browser#http://www.example.com/path-to-Joomla/api
 ```
-Important: You will need to add the following line to your /etc/config.json file in order for
-the HAL Browser to work:
+Important: You will need to add the following line to your /etc/config.json file
+in order for the HAL Browser to work:
 
 ```
 "absoluteHrefs": true
 ```
 
 ## Quick tour of the code
-The “core” code lives in the new /api directory, which is the entry point for the API application.
+The “core” code lives in the new /api directory, which is the entry point for the
+API application.
 
-Basic configuration files go in /etc although standard Joomla configuration.php file is also loaded in order to get the database credentials.
+Basic configuration files go in /etc although the standard Joomla configuration.php
+file is also loaded in order to get the database credentials.
 
-A new /services directory will have been added to each component for which support has been provided.
-The currently supported components are: articles/content, categories and weblinks.
-They demonstrate how an extension can have web services code added to it.  The current code does not make use of any component code,
-and installing it does not overwrite any current code, but sharing model code at least is something that should be seriously considered.
+A new /services directory will have been added to each component for which support
+has been provided.  The currently supported components are: articles/content,
+categories and weblinks.  They demonstrate how an extension can have web services
+code added to it.  The current code does not make use of any component code,
+and installing it does not overwrite any current code, but sharing model code at
+least is something that should be seriously considered.
 
-In the distributed code the Content-Type headers returned have been set to application/json so as to make it easy to test in a web browser.  However, the correct Content-Types (eg. application/vnd.joomla.service.v1+hal+json”) may be returned by uncommenting a line in the get.php files.
+In the distributed code the Content-Type headers returned should be correct as per
+the specification (eg. application/vnd.joomla.service.v1+hal+json”).  The HAL Browser
+will work with these just fine, however if you use a web browser to access the
+API directly they will not normally be recognised.  If you want to test the API
+in a web browser without using the HAL Browser, then comment out the setMimeEncoding
+line in the execute method in the /api/controller/base.php file.  The API will
+then return the default Content-Type: application/json header.
 
 ## Entry point service document
-Pointing a web browser at the api entry point: http://www.example.com/api will return the “service” document which lists the services available via the API.  The format of this document is described in https://docs.google.com/a/joomla.org/document/d/1wg3AcgStA26UwDcbHVV1bub4sa_BhsKfzAmX21eG-FM/edit
-
+Pointing a web browser at the api entry point: http://www.example.com/api will return the “service” document which lists the services
+available via the API.  The format of this document is described in "application/vnd.joomla.service.v1 media type specification" referenced below.
 The code responsible for handling this document can be found in 
 
 ```
@@ -71,9 +91,9 @@ The code responsible for handling this document can be found in
 ```
 
 ## Adding web services support to a component
-Look at /components/com_content for an example of how this could be done.  The core web services code looks for a services.json file in each of the installed component directories.  If it finds one it automatically merges it into the services router map.
+Look in /components/com_content and /components/com_weblinks for examples of how this could be done.  The core web services code looks for a services.json file in each of the installed component directories.  If it finds one it automatically merges it into the services router map.
 
-Here’s the one for com_content:
+Here’s the router map for com_content:
 
 ```javascript
 {
@@ -97,9 +117,9 @@ will cause the controller class ComponentContentArticlesListGet to be loaded fro
 
 The JLoader prefix “ComponentContentArticles” is automatically set up to point to the correct directory, so provided you have the correct class in the correct file the PHP loader will find it without further effort.
 
-The document returned in this case will contain a (paginated) list of articles and is described in https://docs.google.com/a/joomla.org/document/d/1PLym28MG5v1tWyvIyW-9483JNKh5AP21Fmsmg62plnA/edit
+The document returned in this case will contain a (paginated) list of articles and is described in "application/vnd.joomla.list.v1 media type specification" referenced below.
 
-The second line of the JSON file maps URLs such as
+The second line of the services.json file maps URLs such as
 
 ```
 http://www.example.com/api/joomla:articles/1234
@@ -111,7 +131,7 @@ to the controller class ComponentContentArticlesGet in the file
 /components/com_content/services/articles/get.php
 ```
 
-The document returned in this case will contain a representation of the single article requested (by its id) and is described in https://docs.google.com/a/joomla.org/document/d/16xwxSDDPW0U1CG9l7JcwOyGvyjm7wv5zOSd9JwgF2iQ/edit
+The document returned in this case will contain a representation of the single article requested (by its id) and is described in "application/vnd.joomla.item.v1 media type specification" referenced below.
 
 The fields returned for the articles resource are described in https://docs.google.com/a/joomla.org/document/d/1d5qQ16r1Bo1BlXXuyS_eFB4BQcfuSg05pn9hsMpAgqk/edit#heading=h.ygla5naoxuzt
 
@@ -170,7 +190,11 @@ where
 <table>
 	<tr>
 		<td>transformName</td>
-		<td>is the name of a transform that will modify the value before passing it to the API object.  This is often just a matter of type casting (eg. “string” or “int” transforms) but more sophisticated transforms are available (eg. “state”) and you can add your own or override the standard ones.  Look for methods with the “transform” prefix (eg. “string” calls the “transformString” method in the controller).</td>
+		<td>is the name of a transform that will modify the value before passing it
+		 to the API object.  This is often just a matter of type casting
+		 (eg. “string” or “int” transforms) but more sophisticated transforms
+		  are available (eg. “state”) and you can add your own or override the
+		   standard ones.  See below for more information.</td>
 	</tr>
 	<tr>
 		<td>definition</td>
@@ -199,7 +223,8 @@ Some examples:
 	</tr>
 </table>
 
-The following transforms are available by default:
+The standard transforms are defined in the /api/transform directory and are
+described here:
 
 <table>
 	<tr>
@@ -236,15 +261,17 @@ The following transforms are available by default:
 	</tr>
 </table>
 
-The following transform is added for the com_content services:-
+## Adding a custom transform
+Components may add custom transforms override the standard ones if required.
+Create a /transform directory at the same level in the component directory structure
+as the resource.json file and add the additional or override transform classes
+in it.  There is an example of this in 
 
-<table>
-	<tr>
-		<td>position</td>
-		<td>Returns “above”, “below”, “split” or “global”.</td>
-	</tr>
-</table>
+```
+/components/com_content/services/transform/position.php
+```
 
+## Defining which fields to embed in a list representation
 Because the list representation would not normally include a full representation of each of the embeddeded objects,
 there is a simple JSON file that defines which fields are included.  The file for com_content is
 

@@ -1,27 +1,23 @@
 <?php
 /**
  * @package     Joomla.Services
- * @subpackage  Database
  *
  * @copyright   Copyright (C) 2005 - 2013 Open Source Matters, Inc. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE
  */
 
-defined('JPATH_PLATFORM') or die;
-
 /**
  * A class to help build database queries for services.
  *
  * @package     Joomla.Services
- * @subpackage  Database
  * @since       3.2
  */
 class ApiDatabaseQuery
 {
 	/*
-	 * Page information.
+	 * Pagination information.
 	 */
-	protected $page = array();
+	protected $pagination = array();
 
 	/**
 	 * Database object.
@@ -38,7 +34,7 @@ class ApiDatabaseQuery
 		$this->db = $db;
 
 		// Initialise pagination array.
-		$this->page = array(
+		$this->pagination = array(
 			'offset' => 0,
 			'page' => 1,
 			'perPage' => 10,
@@ -48,11 +44,14 @@ class ApiDatabaseQuery
 	/**
 	 * Get single data record.
 	 *
-	 * @param  JDatabaseQuery  $query  A database query object.
-	 * @param  integer         $id     Record primary key value.
-	 * @param  string          $pk     Primary key.
+	 * Given a base query this method will return the single
+	 * data record with the given value of a unique key.
 	 *
-	 * @return Array of data objects returned by the query.
+	 * @param  JDatabaseQuery  $query  A database query object.
+	 * @param  integer         $id     Unique key value.
+	 * @param  string          $pk     Key name.
+	 *
+	 * @return object Single resource item object.
 	 */
 	public function getItem(JDatabaseQuery $query, $id, $pk = 'id')
 	{
@@ -71,6 +70,9 @@ class ApiDatabaseQuery
 	/**
 	 * Get page of data.
 	 *
+	 * Given a base query this method will apply current pagination
+	 * variables to return a page of data records.
+	 *
 	 * @param  JDatabaseQuery  $query  A database query object.
 	 *
 	 * @return Array of data objects returned by the query.
@@ -78,23 +80,23 @@ class ApiDatabaseQuery
 	public function getList(JDatabaseQuery $query)
 	{
 		// Apply sanity check to perPage.
-		$this->page['perPage'] = min(max($this->page['perPage'], 1), 100);
+		$this->pagination['perPage'] = min(max($this->pagination['perPage'], 1), 100);
 
 		// Determine total items and total pages.
 		$countQuery = clone($query);
 		$countQuery->clear('select')->select('count(*)');
-		$this->page['totalItems'] = (int) $this->db->setQuery($countQuery)->loadResult();
-		$this->page['totalPages'] = (int) floor(($this->page['totalItems']-1)/$this->page['perPage']) + 1;
+		$this->pagination['totalItems'] = (int) $this->db->setQuery($countQuery)->loadResult();
+		$this->pagination['totalPages'] = (int) floor(($this->pagination['totalItems']-1)/$this->pagination['perPage']) + 1;
 
 		// Apply sanity check to page number.
-		$this->page['page'] = min(max($this->page['page'], 1), $this->page['totalPages']);
+		$this->pagination['page'] = min(max($this->pagination['page'], 1), $this->pagination['totalPages']);
 
 		// Calculate base for paginated query.
-		$base = ($this->page['page'] - 1) * $this->page['perPage'] + $this->page['offset'];
+		$base = ($this->pagination['page'] - 1) * $this->pagination['perPage'] + $this->pagination['offset'];
 
 		// Retrieve the data.
 		$data = $this->db
-			->setQuery($query, $base, $this->page['perPage'])
+			->setQuery($query, $base, $this->pagination['perPage'])
 			->loadObjectList();
 
 		return $data;
@@ -107,19 +109,19 @@ class ApiDatabaseQuery
 	 */
 	public function getPagination()
 	{
-		return $this->page;
+		return $this->pagination;
 	}
 
 	/**
 	 * Set pagination variables.
 	 *
-	 * @param  array  $page  Array of pagination variables.
+	 * @param  array  $pagination  Array of pagination variables.
 	 *
 	 * @return object  This object may be chained.
 	 */
-	public function setPagination($page = array())
+	public function setPagination($pagination = array())
 	{
-		$this->page = array_merge($this->page, $page);
+		$this->pagination = array_merge($this->pagination, $pagination);
 
 		return $this;
 	}

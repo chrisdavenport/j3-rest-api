@@ -69,6 +69,9 @@ class ApiApplicationWeb extends JApplicationWeb
 
 		// Load the Joomla CMS configuration object.
 		$this->loadConfiguration($this->fetchConfigurationData());
+
+		// By default, assume response may be cached.
+		$this->allowCache(true);
 	}
 
 	/**

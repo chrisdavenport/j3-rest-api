@@ -1,58 +1,37 @@
 <?php
+/**
+ * @package     Joomla.Services
+ *
+ * @copyright   Copyright (C) 2005 - 2013 Open Source Matters, Inc. All rights reserved.
+ * @license     GNU General Public License version 2 or later; see LICENSE
+ */
 
-class ComponentWeblinksWeblinksGet extends JControllerBase
+class ComponentWeblinksWeblinksGet extends ApiControllerItem
 {
-	/*
-	 * Name of the primary resource.
-	 */
-	protected $primaryEntity = 'joomla:weblinks';
-
-	/*
-	 * Content-Type header.
-	 */
-	protected $contentType = 'application/vnd.joomla.item.v1; schema=weblinks.v1';
-
 	/**
-	 * Execute the request.
+	 * Constructor.
+	 *
+	 * @param   JInput            $input  The input object.
+	 * @param   JApplicationBase  $app    The application object.
 	 */
-	public function execute()
+	public function __construct(JInput $input = null, JApplicationBase $app = null)
 	{
-		// Application options.
+		parent::__construct($input, $app);
+
+		// Use the default database.
+		$this->setDatabase();
+
+		// Set the controller options.
 		$serviceOptions = array(
-			'contentType' => $this->contentType,
+			'contentType' => 'application/vnd.joomla.item.v1; schema=weblinks.v1',
 			'describedBy' => 'http://docs.joomla.org/Schemas/weblinks/v1',
+			'primaryRel'  => 'joomla:weblinks',
 			'resourceMap' => __DIR__ . '/resource.json',
+			'self' 		  => '/joomla:weblinks/' . (int) $this->input->get('id'),
+			'tableName'   => '#__weblinks',
 		);
 
-		// Get database object.
-		$db = $this->app->getDatabase();
-
-		// Create a database query object.
-		$query = $db->getQuery(true)
-			->select('*')
-			->from('#__weblinks as a')
-			;
-
-		// Get a database query helper object.
-		$apiQuery = new ApiDatabaseQuery($db);
-
-		// Create response object.
-		$service = new ApiApplicationHalJoomla($serviceOptions);
-		$service->addLink(new ApiApplicationHalLink($this->primaryEntity, '/' . $this->primaryEntity));
-
-		// Get single record from database.
-		$data = $apiQuery->getItem($query, (int) $this->input->get('id'));
-
-		// Load the data into the HAL object.
-		$service->load($data);
-
-		// Response may be cached.
-		$this->app->allowCache(true);
-
-		// Push results into the document.
-		$this->app->getDocument()
-//			->setMimeEncoding($this->contentType)		// Comment this line out to debug
-			->setBuffer($service->getHal())
-			;
+		$this->setOptions($serviceOptions);
 	}
+
 }

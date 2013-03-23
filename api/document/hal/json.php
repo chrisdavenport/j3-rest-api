@@ -1,13 +1,10 @@
 <?php
 /**
  * @package     Joomla.Services
- * @subpackage  Document
  *
  * @copyright   Copyright (C) 2005 - 2013 Open Source Matters, Inc. All rights reserved.
- * @license     GNU General Public License version 2 or later; see LICENSE
+ * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
-
-defined('JPATH_PLATFORM') or die;
 
 /**
  * ApiDocumentHal class, provides an easy interface to parse and display HAL+JSON output
@@ -83,7 +80,7 @@ class ApiDocumentHalJson extends JDocument
 		$hal = $this->getBuffer();
 
 		// If required, change relative links to absolute.
-		if ($this->absoluteHrefs && $hal instanceof ApiApplicationHal)
+		if ($this->absoluteHrefs && is_object($hal) && isset($hal->_links))
 		{
 			// Adjust hrefs in the _links object.
 			$this->relToAbs($hal->_links);
