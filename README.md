@@ -50,7 +50,7 @@ You can browse the API interactively using Mike Kelly's HAL Browser, included in
 the repository.  Simply point a web browser at the following URL:
 
 ```
-http://www.example.com/path-to-Joomla/api/hal-browser#http://www.example.com/path-to-Joomla/api
+http://www.example.com/path-to-Joomla/api/hal-browser/browser.html#http://www.example.com/path-to-Joomla/api
 ```
 Important: You will need to add the following line to your /etc/config.json file
 in order for the HAL Browser to work:
