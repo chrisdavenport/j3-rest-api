@@ -46,8 +46,11 @@ You should get some JSON back.  This is the entry point service document describ
 below.
 
 ## Using the HAL Browser
-You can browse the API interactively using Mike Kelly's HAL Browser, included in
-the repository.  Simply point a web browser at the following URL:
+You can browse the API interactively using Mike Kelly's HAL Browser.  As the /api/hal-browser
+directory in this repository is corrupted in some weird way I haven't been able to fix, you
+will need to download and install it yourself from https://github.com/mikekelly/hal-browser.
+
+Once installed simply point a web browser at the following URL (adjusted for your environment):
 
 ```
 http://www.example.com/path-to-Joomla/api/hal-browser/browser.html#http://www.example.com/path-to-Joomla/api
