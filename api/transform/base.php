@@ -6,7 +6,7 @@
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
-class ApiTransformString extends ApiTransformBase
+abstract class ApiTransformBase implements ApiTransform
 {
 	/**
 	 * Method to transform an internal representation to an external one.
@@ -18,7 +18,20 @@ class ApiTransformString extends ApiTransformBase
 	 */
 	public static function toExternal($definition, $data)
 	{
-		return (string) $definition;
+		return $definition;
+	}
+
+	/**
+	 * Method to transform an external representation to an internal one.
+	 *
+	 * @param  string   $definition  Field definition.
+	 * @param  mixed    $data        Source data.
+	 *
+	 * @return string Transformed value.
+	 */
+	public static function toInternal($definition, $data)
+	{
+		return $definition;
 	}
 
 }

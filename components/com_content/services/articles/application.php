@@ -1,22 +1,21 @@
 <?php
-/**
- * @package     Joomla.Services
- *
- * @copyright   Copyright (C) 2005 - 2013 Open Source Matters, Inc. All rights reserved.
- * @license     GNU General Public License version 2 or later; see LICENSE.txt
- */
 
-class ComponentContentArticlesTransformPosition extends ApiTransformBase
+/**
+ * Class to represent a Joomla HAL object.
+ *
+ * This is a standard HAL object with some additional properties.
+ */
+class ComponentContentArticlesApplication extends ApiApplicationHalJoomla
 {
 	/**
-	 * Method to transform an internal representation to an external one.
+	 * Method to transform a value to standard state string.
 	 *
 	 * @param  string   $definition  Field definition.
 	 * @param  mixed    $data        Source data.
 	 *
 	 * @return string Transformed value.
 	 */
-	public static function toExternal($definition, $data)
+	protected function transformPosition($definition, $data)
 	{
 		switch ($definition)
 		{

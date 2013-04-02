@@ -21,9 +21,9 @@ class ApiApplicationHal
 	 * Add link object.
 	 * Link objects with the same rel name are contained in an array.
 	 *
-	 * @param  HalLink $link  Link object.
+	 * @param  ApiApplicationHalLink  $link  Link object.
 	 *
-	 * @return Hal This method may be chained.
+	 * @return object This method may be chained.
 	 */
 	public function addLink(ApiApplicationHalLink $link)
 	{
@@ -54,6 +54,8 @@ class ApiApplicationHal
 	 *
 	 * @param  string  $name  Name (rel) of embedded objects.
 	 * @param  array   $data  Array of objects to be embedded.
+	 *
+	 * @return object This method may be chained.
 	 */
 	public function embed($name, $data)
 	{
@@ -134,7 +136,7 @@ class ApiApplicationHal
 	 *
 	 * @param  object  $object  Object whose properties are to be loaded.
 	 *
-	 * @return object This object for chaining.
+	 * @return object This method may be chained.
 	 */
 	public function load($object)
 	{

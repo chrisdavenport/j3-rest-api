@@ -27,7 +27,7 @@ class ApiServicesMenuitemsListGet extends ApiControllerList
 			'describedBy' => 'http://docs.joomla.org/Schemas/menuitems/v1',
 			'embeddedMap' => __DIR__ . '/embedded.json',
 			'primaryRel'  => 'joomla:menuitems',
-			'resourceMap' => __DIR__ . '/../resource.json',
+			'resourceMap' => realpath(__DIR__ . '/../resource.json'),
 			'self' => '/joomla:menuitems',
 			'tableName'   => '#__menu',
 		);

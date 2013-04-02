@@ -27,7 +27,7 @@ class ComponentContentArticlesListGet extends ApiControllerList
 			'describedBy' => 'http://docs.joomla.org/Schemas/articles/v1',
 			'embeddedMap' => __DIR__ . '/embedded.json',
 			'primaryRel'  => 'joomla:articles',
-			'resourceMap' => __DIR__ . '/../resource.json',
+			'resourceMap' => realpath(__DIR__ . '/../resource.json'),
 			'self'		  => '/joomla:articles',
 			'tableName'   => '#__content',
 		);

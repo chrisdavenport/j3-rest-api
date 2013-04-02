@@ -9,12 +9,12 @@
 /**
  * Class to represent a Joomla HAL object.
  *
- * This is a standard HAL object with some additional properties.
+ * This is a HAL object with some Joomla-specific additional properties.
  */
 class ApiApplicationHalJoomla extends ApiApplicationHal
 {
 	/*
-	 * Metadata.
+	 * Metadata object.
 	 */
 	protected $meta = null;
 
@@ -34,24 +34,14 @@ class ApiApplicationHalJoomla extends ApiApplicationHal
 	protected $offset = 0;
 
 	/*
-	 * Resource map filename.
-	 */
-	protected $resourceMapFile = '';
-
-	/*
 	 * Resource map.
 	 */
-	protected $resourceMap = array();
+	protected $resourceMap = null;
 
 	/*
-	 * Embedded map filename.
+	 * Include map object for embedded resources.
 	 */
-	protected $embeddedMapFile = '';
-
-	/*
-	 * Embedded resource map.
-	 */
-	protected $embeddedMap = array();
+	protected $includeMap = null;
 
 	/**
 	 * Constructor.
@@ -91,30 +81,21 @@ class ApiApplicationHalJoomla extends ApiApplicationHal
 		}
 
 		// Load the resource field map (if there is one).
-		$this->resourceMapFile = isset($options['resourceMap']) ? $options['resourceMap'] : '';
-		if ($this->resourceMapFile != '' && file_exists($this->resourceMapFile))
+		$resourceMapFile = isset($options['resourceMap']) ? $options['resourceMap'] : '';
+		if ($resourceMapFile != '' && file_exists($resourceMapFile))
 		{
-			$this->resourceMap = json_decode(file_get_contents($this->resourceMapFile), true);
+			$basePath = dirname($options['resourceMap']);
+			$this->resourceMap = new ApiApplicationResourcemap(array('basePath' => $basePath));
+			$this->resourceMap->fromJson(file_get_contents($resourceMapFile));
 		}
 
 		// Load the embedded field map (if there is one).
-		$this->embeddedMapFile = isset($options['embeddedMap']) ? $options['embeddedMap'] : '';
-		if ($this->embeddedMapFile != '' && file_exists($this->embeddedMapFile))
+		$embeddedMapFile = isset($options['embeddedMap']) ? $options['embeddedMap'] : '';
+		if ($embeddedMapFile != '' && file_exists($embeddedMapFile))
 		{
 			// Load the embedded fields list.
-			$embeddedList = json_decode(file_get_contents($this->embeddedMapFile), true);
-
-			// The "embedded" array will contain a list of field names to be retained.
-			if (isset($embeddedList['embedded']))
-			{
-				foreach ($embeddedList['embedded'] as $fieldName)
-				{
-					if (isset($this->resourceMap[$fieldName]))
-					{
-						$this->embeddedMap[$fieldName] = $this->resourceMap[$fieldName];
-					}
-				}
-			}
+			$this->includeMap = new ApiApplicationIncludemap();
+			$this->includeMap->fromJson(file_get_contents($embeddedMapFile));
 		}
 	}
 
@@ -129,16 +110,19 @@ class ApiApplicationHalJoomla extends ApiApplicationHal
 	public function embed($name, $data)
 	{
 		// If there is no map then use the standard embed method.
-		if (empty($this->embeddedMap))
+		if (!($this->includeMap instanceof ApiApplicationIncludemap))
 		{
 			return parent::embed($name, $data);
 		}
+
+		// Get list of fields to be included.
+		$include = $this->includeMap->toArray();
 
 		// Transform the source data array.
 		$resources = array();
 		foreach ($data as $key => $datum)
 		{
-			$resources[$key] = $this->transform($datum, $this->embeddedMap);
+			$resources[$key] = $this->resourceMap->toExternal($datum, $include);
 		}
 
 		// Embed data into HAL object.
@@ -185,88 +169,13 @@ class ApiApplicationHalJoomla extends ApiApplicationHal
 	}
 
 	/**
-	 * Method to extract a value from the source data.
+	 * Method to return the resource map object.
 	 *
-	 * @param  string $sourceDefinition Source data field name.
-	 * @param  array  $sourceData       Source data.
-	 *
-	 * @return mixed Requested data field.
+	 * @return ApiApplicationResourcemap Resource map object.
 	 */
-	protected function getSourceValue($sourceDefinition, $sourceData)
+	public function getResourceMap()
 	{
-		// Source definition fields must be in the form type:definition.
-		// Locate first occurrence of a colon.
-		$pos = strpos($sourceDefinition, ':');
-
-		// Separate type and definition.
-		$sourceFieldType = substr($sourceDefinition, 0, $pos);
-		$definition = substr($sourceDefinition, $pos+1);
-
-		// Look for source field names.  These are surrounded by curly brackets.
-		preg_match_all('/\{(.*)\}/U', $definition, $matches);
-
-		// If the definition contains field names, substitute their values.
-		if (!empty($matches[0]))
-		{
-			foreach ($matches[1] as $key => $fieldName)
-			{
-				$matches[1][$key] = $this->getValue($fieldName, $sourceData);
-			}
-
-			// Replace {fieldName} with value.
-			$definition = str_replace($matches[0], $matches[1], $definition);
-		}
-
-		// Transform the value depending on its type.
-		$return = $this->transformField($sourceFieldType, $definition, $sourceData);
-
-		return $return;
-	}
-
-	/**
-	 * Method to get a value from the source data.
-	 *
-	 * @param  string  $fieldName  Name of the field.
-	 * @param  string  $data       Data.
-	 *
-	 * @return mixed Field value (or null if not found).
-	 */
-	protected function getValue($fieldName, $data)
-	{
-		// Static array of unpacked json fields.
-		static $unpacked = array();
-
-		$return = null;
-
-		// Look for an optional field separator in name.
-		// The dot separator indicates that the prefix is a json-encoded
-		// field, each element of which can be addressed by the suffix.
-		if (strpos($fieldName, '.') !== false)
-		{
-			// Extract the field names.
-			list($context, $fieldName) = explode('.', $fieldName);
-
-			// Make sure we have unpacked the json field.
-			if (!isset($unpacked[$context]))
-			{
-				$unpacked[$context] = json_decode($data->$context);
-			}
-
-			if (isset($unpacked[$context]->$fieldName))
-			{
-				$return = $unpacked[$context]->$fieldName;
-			}
-		}
-		else
-		{
-			// If the field does not exist, return null.
-			if (isset($data->$fieldName))
-			{
-				$return = $data->$fieldName;
-			}
-		}
-
-		return $return;
+		return $this->resourceMap;
 	}
 
 	/**
@@ -274,7 +183,7 @@ class ApiApplicationHalJoomla extends ApiApplicationHal
 	 *
 	 * @param  object  $object  Object whose properties are to be loaded.
 	 *
-	 * @return object This object for chaining.
+	 * @return object This method may be chained.
 	 */
 	public function load($object)
 	{
@@ -284,7 +193,7 @@ class ApiApplicationHalJoomla extends ApiApplicationHal
 			return parent::load($object);
 		}
 
-		parent::load($this->transform($object, $this->resourceMap));
+		parent::load($this->resourceMap->toExternal($object));
 
 		return $this;
 	}
@@ -339,135 +248,6 @@ class ApiApplicationHalJoomla extends ApiApplicationHal
 		}
 
 		return $this;
-	}
-
-	/**
-	 * Method to transform data using a map.
-	 *
-	 * @param  object  $sourceData  Source data object.
-	 * @param  array   $map         Array of maps.
-	 *
-	 * @return object Transformed data.
-	 */
-	protected function transform($sourceData, $map = array())
-	{
-		// If there is no map then return the source data unmodified.
-		if (empty($map))
-		{
-			return $sourceData;
-		}
-
-		// Initialise the object store.
-		$targetData = array();
-
-		// Run through each mapped field.
-		foreach ($map as $halField => $sourceDefinition)
-		{
-			// Left-hand side (HAL field) must be in the form objectName/name.
-			// Note that objectName is optional; default is "main".
-			list($halFieldPath, $halFieldName) = explode('/', $halField);
-
-			// If we have a non-empty objectName then make sure we have an object with that name.
-			$targetContext = $halFieldPath == '' ? 'main' : $halFieldPath;
-			if (!isset($targetData[$targetContext]))
-			{
-				$targetData[$targetContext] = new stdClass;
-			}
-
-			// Look for an optional field separator in name.
-			// The dot separator indicates that the prefix is an object
-			// and the suffix is a property of that object.
-			if (strpos($halFieldName, '.') !== false)
-			{
-				// Extract the field names.
-				list($halFieldObject, $halFieldProperty) = explode('.', $halFieldName);
-
-				// If the object doesn't already exist, create it.
-				if (!isset($targetData[$targetContext]->$halFieldObject))
-				{
-					$targetData[$targetContext]->$halFieldObject = new stdClass;
-				}
-
-				// Extract source data into object property.
-				$targetData[$targetContext]->$halFieldObject->$halFieldProperty = $this->getSourceValue($sourceDefinition, $sourceData);
-			}
-			else
-			{
-				// Extract source data into simple field.
-				$targetData[$targetContext]->$halFieldName = $this->getSourceValue($sourceDefinition, $sourceData);
-			}
-		}
-
-		// Remove any redundant _links.
-		if (isset($targetData['_links']))
-		{
-			foreach ($targetData['_links'] as $k => $link)
-			{
-				if (!isset($link->href) || $link->href == '')
-				{
-					unset($targetData['_links']->$k);
-				}
-			}
-		}
-
-		// Move subsidiary objects under main object so it has the right structure when serialised.
-		foreach ($targetData as $objName => $object)
-		{
-			if ($objName != 'main')
-			{
-				$targetData['main']->$objName = $targetData[$objName];
-				unset( $targetData[$objName]);
-			}
-		}
-
-		return $targetData['main'];
-	}
-
-	/**
-	 * Transform a source field data value.
-	 *
-	 * Calls the static execute method of a transform class.
-	 * First looks for the transform class in the /transform directory
-	 * in the same directory as the resource.json file.  Then looks
-	 * for it in the /api/transform directory.
-	 *
-	 * @param  string  $fieldType   Field type.
-	 * @param  string  $definition  Field definition.
-	 * @param  string  $data        Data to be transformed.
-	 *
-	 * @return mixed Transformed data.
-	 */
-	protected function transformField($fieldType, $definition, $data)
-	{
-		// Get the path to the resource.json file.
-		$path = str_replace(JPATH_BASE, '', dirname($this->resourceMapFile));
-
-		// Explode it and make some adjustments.
-		$parts = explode('/', $path);
-		foreach ($parts as $k => $part)
-		{
-			$parts[$k] = ucfirst(str_replace('com_', '', $part));
-			if ($part == 'components')
-			{
-				$parts[$k] = 'Component';
-			}
-			if ($part == 'services')
-			{
-				unset($parts[$k]);
-			}
-		}
-
-		// Construct the name of the method to do the transform (default is toString).
-		$className = implode('', $parts) . 'Transform' . ucfirst($fieldType);
-		if (!class_exists($className))
-		{
-			$className = 'ApiTransform' . ucfirst($fieldType);
-		}
-
-		// Execute the transform.
-		$return = $className::execute($definition, $data);
-
-		return $return;
 	}
 
 }

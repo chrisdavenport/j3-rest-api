@@ -6,17 +6,17 @@
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
-class ApiTransformDatetime
+class ApiTransformDatetime extends ApiTransformBase
 {
 	/**
-	 * Method to transform a value to a string.
+	 * Method to transform an internal representation to an external one.
 	 *
 	 * @param  string   $definition  Field definition.
 	 * @param  mixed    $data        Source data.
 	 *
 	 * @return string Transformed value.
 	 */
-	public static function execute($definition, $data)
+	public static function toExternal($definition, $data)
 	{
 		// @TODO Convert MySQL data string to ISO 8601.
 		return (string) $definition;
