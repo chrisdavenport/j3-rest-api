@@ -341,6 +341,7 @@ class ApiApplicationWeb extends JApplicationWeb
 		$this->setHeader('Server', '', true);
 		$this->setHeader('X-Powered-By', 'JoomlaWebAPI/1.0', true);
 		$this->setHeader('X-Runtime', $runtime, true);
+		$this->setHeader('Access-Control-Allow-Origin', '*', true);
 
 		// Copy document encoding and charset into application.
 		$this->mimeType = $this->getDocument()->getMimeEncoding();
