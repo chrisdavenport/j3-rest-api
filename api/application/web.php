@@ -10,31 +10,31 @@
  * Joomla API Web Application.
  *
  * @package  Joomla.Services
- * @since    3.1
+ * @since    3.2
  */
 class ApiApplicationWeb extends JApplicationWeb
 {
 	/**
 	 * @var    JDatabaseDriver  A database object for the application to use.
-	 * @since  3.1
+	 * @since  3.2
 	 */
 	protected $db;
 
 	/**
 	 * @var    JApplicationWebRouter  A router object for the application to use.
-	 * @since  3.1
+	 * @since  3.2
 	 */
 	protected $router;
 
 	/**
 	 * @var    JCache  The application cache object.
-	 * @since  3.1
+	 * @since  3.2
 	 */
 	protected $cache;
 
 	/**
 	 * @var    array  Service routes.
-	 * @since  3.1
+	 * @since  3.2
 	 */
 	protected $maps = array();
 
@@ -42,7 +42,7 @@ class ApiApplicationWeb extends JApplicationWeb
 	 * The start time for measuring the execution time.
 	 *
 	 * @var    float
-	 * @since  3.1
+	 * @since  3.2
 	 */
 	private $_startTime;
 
@@ -59,7 +59,7 @@ class ApiApplicationWeb extends JApplicationWeb
 	 *                          client object.  If the argument is a JApplicationWebClient object that object will become
 	 *                          the application's client object, otherwise a default client object is created.
 	 *
-	 * @since   11.3
+	 * @since   3.2
 	 */
 	public function __construct(JInput $input = null, JRegistry $config = null, JApplicationWebClient $client = null)
 	{
@@ -79,7 +79,7 @@ class ApiApplicationWeb extends JApplicationWeb
 	 *
 	 * @return  JDatabaseDriver  The database driver.
 	 *
-	 * @since   12.1
+	 * @since   3.2
 	 */
 	public function getDatabase()
 	{
@@ -91,9 +91,9 @@ class ApiApplicationWeb extends JApplicationWeb
 	 *
 	 * @param   JDatabaseDriver  $driver  An optional database driver object. If omitted, the application driver is created.
 	 *
-	 * @return  JApplicationBase This method is chainable.
+	 * @return  object This method may be chained.
 	 *
-	 * @since   12.1
+	 * @since   3.2
 	 */
 	public function loadDatabase(JDatabaseDriver $driver = null)
 	{
@@ -132,9 +132,9 @@ class ApiApplicationWeb extends JApplicationWeb
 	 *
 	 * @param   array  $maps  A list of route maps to add to the router as $pattern => $controller.
 	 *
-	 * @return  JApplicationBase This method is chainable.
+	 * @return  object This method may be chained.
 	 *
-	 * @since   3.1
+	 * @since   3.2
 	 */
 	protected function loadMaps($maps = array())
 	{
@@ -162,9 +162,9 @@ class ApiApplicationWeb extends JApplicationWeb
 	 *
 	 * @param   JApplicationWebRouter  $router  An optional router object. If omitted, the standard router is created.
 	 *
-	 * @return  JApplicationWeb This method is chainable.
+	 * @return  object This method may be chained.
 	 *
-	 * @since   3.1
+	 * @since   3.2
 	 */
 	public function loadRouter(JApplicationWebRouter $router = null)
 	{
@@ -178,7 +178,7 @@ class ApiApplicationWeb extends JApplicationWeb
 	 *
 	 * @return  void
 	 *
-	 * @since   3.1
+	 * @since   3.2
 	 */
 	protected function doExecute()
 	{
@@ -215,7 +215,7 @@ class ApiApplicationWeb extends JApplicationWeb
 	 *
 	 * @return  object An object to be loaded into the application configuration.
 	 *
-	 * @since   3.1
+	 * @since   3.2
 	 */
 	public function fetchApiConfigurationData($file = '', $class = 'JConfig')
 	{
@@ -258,16 +258,21 @@ class ApiApplicationWeb extends JApplicationWeb
 	}
 
 	/**
-	 * Method to load services route maps from standard locations.
+	 * Method to load services route maps from all subdirectories
+	 * within a given directory (non-recursive).
 	 *
-	 * @return  JApplicationBase This method is chainable.
+	 * @param  string  $basePath  Path to base directory.
 	 *
-	 * @since   3.1
+	 * @return  object This method may be chained.
+	 *
+	 * @since   3.2
 	 */
-	public function fetchStandardMaps()
+	protected function fetchMaps($basePath = JPATH_SITE)
 	{
-		// Look for services files in all the installed components.
-		$iterator = new DirectoryIterator(JPATH_SITE . '/components');
+		// Get a directory iterator for the base path.
+		$iterator = new DirectoryIterator($basePath);
+
+		// Iterate over the files, looking for just the directories.
 		foreach ($iterator as $file)
 		{
 			$fileName = $file->getFilename();
@@ -276,13 +281,31 @@ class ApiApplicationWeb extends JApplicationWeb
 			if ($file->isDir())
 			{
 				// Look for services file.
-				$servicesFilename = JPATH_SITE . '/components/' . $fileName . '/services.json';
+				$servicesFilename = $basePath . '/' . $fileName . '/services.json';
 				if (file_exists($servicesFilename))
 				{
 					$this->loadMaps(json_decode(file_get_contents($servicesFilename), true));
 				}
 			}
 		}
+
+		return $this;
+	}
+
+	/**
+	 * Method to load services route maps from standard locations.
+	 *
+	 * @return  object This method may be chained.
+	 *
+	 * @since   3.2
+	 */
+	public function fetchStandardMaps()
+	{
+		// Look for maps in front-end components.
+		$this->fetchMaps(JPATH_SITE . '/components');
+
+		// Look for maps in back-end components.
+		$this->fetchMaps(JPATH_ADMINISTRATOR . '/components');
 
 		// Merge the main services file.
 		$this->loadMaps(json_decode(file_get_contents(JPATH_CONFIGURATION . '/services.json'), true));
@@ -295,7 +318,7 @@ class ApiApplicationWeb extends JApplicationWeb
 	 *
 	 * @return  array  A list of route maps to add to the router as $pattern => $controller.
 	 *
-	 * @since   3.1
+	 * @since   3.2
 	 */
 	public function getMaps()
 	{
@@ -308,7 +331,7 @@ class ApiApplicationWeb extends JApplicationWeb
 	 *
 	 * @return  void
 	 *
-	 * @since   3.1
+	 * @since   3.2
 	 */
 	protected function respond()
 	{

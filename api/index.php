@@ -47,6 +47,10 @@ if (!defined('JPATH_SITE'))
 {
 	define('JPATH_SITE', $JAPIHOME);
 }
+if (!defined('JPATH_ADMINISTRATOR'))
+{
+	define('JPATH_ADMINISTRATOR', $JAPIHOME . '/administrator');
+}
 if (!defined('JPATH_CACHE'))
 {
 	define('JPATH_CACHE', '/tmp/cache');
