@@ -349,13 +349,13 @@ class ApiApplicationResourcemap
 		$className = $this->getTransformClass($fieldType);
 
 		// Execute the transform.
-//		$return = $className instanceof ApiTransform
-//			? $className::toExternal($definition, $data)
-//			: $definition;
-
-		$return = $className::toExternal($definition, $data);
-
-		return $return;
+		if ($className instanceof ApiTransform)
+		{
+			return $className::toExternal($definition, $data);
+		}
+		else
+		{
+			return $definition;
+		}
 	}
-
 }

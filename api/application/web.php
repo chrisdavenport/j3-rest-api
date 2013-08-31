@@ -174,6 +174,29 @@ class ApiApplicationWeb extends JApplicationWeb
 	}
 
 	/**
+	 * Allows the application to load a custom or default dispatcher.
+	 *
+	 * The logic and options for creating this object are adequately generic for default cases
+	 * but for many applications it will make sense to override this method and create event
+	 * dispatchers, if required, based on more specific needs.
+	 *
+	 * @param   JEventDispatcher  $dispatcher  An optional dispatcher object. If omitted, the factory dispatcher is created.
+	 *
+	 * @return  JApplicationBase This method is chainable.
+	 *
+	 * @since   12.1
+	 */
+	public function loadDispatcher(JEventDispatcher $dispatcher = null)
+	{
+		$this->dispatcher = ($dispatcher === null) ? JEventDispatcher::getInstance() : $dispatcher;
+
+		// Trigger the authentication plugins.
+		JPluginHelper::importPlugin('authentication');
+
+		return $this;
+	}
+
+	/**
 	 * Execute the application.
 	 *
 	 * @return  void

@@ -23,6 +23,12 @@
  * RewriteRule .* api/index.php [L]
  * #
  */
+/**
+ * Constant that is checked in included files to prevent direct access.
+ * define() is used in the installation folder rather than "const" to not error for PHP 5.2 and lower
+ */
+define('_JEXEC', 1);
+
 error_reporting(-1);
 ini_set('display_errors', 1);
 
@@ -31,11 +37,13 @@ $JAPIHOME = getenv('JAPI_HOME') ? getenv('JAPI_HOME') : dirname(__DIR__);
 
 // Look for the Joomla Platform.
 $JPLATFORMHOME = getenv('JPLATFORM_HOME') ? getenv('JPLATFORM_HOME') : dirname(__DIR__) . '/libraries';
+define('JPATH_PLATFORM', $JPLATFORMHOME);
+define('JPATH_LIBRARIES', $JPLATFORMHOME);
 
 // Fire up the Platform importer.
-if (file_exists($JPLATFORMHOME . '/import.php'))
+if (file_exists( JPATH_LIBRARIES . '/import.php'))
 {
-	require $JPLATFORMHOME . '/import.php';
+	require JPATH_LIBRARIES . '/import.php';
 }
 
 // Ensure that required path constants are defined.
@@ -63,6 +71,10 @@ if (!defined('JPATH_API'))
 {
 	define('JPATH_API', $JAPIHOME . '/api');
 }
+if (!defined('JPATH_PLUGINS'))
+{
+	define('JPATH_PLUGINS', $JAPIHOME . '/plugins');
+}
 
 try
 {
@@ -80,8 +92,9 @@ try
 
 	// Execute the application.
 	$application->loadSession()
-		->loadConfiguration($application->fetchApiConfigurationData())
 		->loadDatabase()
+		->loadIdentity()
+		->loadDispatcher()
 		->fetchStandardMaps()
 		->loadRouter()
 		->execute();
