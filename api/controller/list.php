@@ -71,7 +71,7 @@ abstract class ApiControllerList extends ApiControllerBase
 		$pagination = array(
 			'offset'  => (int) $this->input->get('offset', 0),
 			'page'    => (int) $this->input->get('page', 1),
-			'perPage' => (int) $this->input->get('perPage', 10),
+			'perPage' => (int) $this->input->get('perPage', 15),
 		);
 
 		return $pagination;
@@ -98,5 +98,4 @@ abstract class ApiControllerList extends ApiControllerBase
 
 		return $query;
 	}
-
 }
